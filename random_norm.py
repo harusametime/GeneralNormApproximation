@@ -10,13 +10,23 @@ from general_norm import GeneralNorm
 
 if __name__ == '__main__':
     
-    row = np.array([0, 0, 1, 2, 2, 2])
-    col = np.array([0, 2, 2, 0, 1, 2])
-    data = np.array([1, 2, 3, 4, 5, 6])
-    A = sp.csr_matrix((data, (row, col)), shape=(6, 3)).toarray()
+    # Number of rows in each matrix A_1, A_2,...
+    # The dimensions are identical with the number of matrices.
+    # For example, if A_1 and A_2 are give, the dimensions must be two.  
+    n_row = np.array([300, 400])
     
-    b = np.array([3,3,3,4,4,4])
-    l = np.array([2,2])
+    # Number of columns in A, which is identical with the size of solution vector x
+    n_col = 400
+
+    # Sparse matrices A_1, A_2,... and vectors b_1, b_2 ... are randomly generated.
+    list_A = [sp.csr_matrix(np.random.rand(n_row[i],n_col)) for i in range(n_row.shape[0])]
+    list_b = [np.random.rand(n_row[i]) for i in range(n_row.shape[0])]
+    
+    # Weights for norms
     w = np.array([1,1])
-        
-    m = GeneralNorm(A, b, w, l)
+    
+    # p values for norms, e.g. [2, 2] is for Ridge Regression, [2,1] is for Lasso 
+    l = np.array([2,1])
+    
+    # Put all parameters on general norms
+    m = GeneralNorm(list_A, list_b, w, l)
