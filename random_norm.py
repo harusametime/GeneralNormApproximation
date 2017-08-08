@@ -30,3 +30,5 @@ if __name__ == '__main__':
     
     # Put all parameters on general norms
     m = GeneralNorm(list_A, list_b, w, l)
+    
+    x = m.solve()
