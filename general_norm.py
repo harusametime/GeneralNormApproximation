@@ -1,7 +1,7 @@
 '''
-Created on 2017/08/03
-
-@author: samejima
+@date: 2017/08/03
+@author: Masaki Samejima
+@description:  Class of General Norm Approximation
 '''
 
 import numpy as np
@@ -11,8 +11,6 @@ import scipy.linalg as al
 from itertools import product
 import math
 
-import sys
-
 class GeneralNorm(object):
     '''
     This class
@@ -21,6 +19,7 @@ class GeneralNorm(object):
     '''
     def __init__(self, list_A, list_b, w, p):
         '''
+        This initializes a class instance with the following parameters.
         A \in R^{(m_1 +m_2 +...)  x n}:
            Sparse matrix composed of vertically aligned matrices A_1, A_2, ..., A_K 
             CSR:Compressed Sparse Rows is recommended.
@@ -32,7 +31,7 @@ class GeneralNorm(object):
             Vector of p values in p-norm
         '''
 
-        ## A, b, l, w are given on every norms
+        ## Check the size of A, b, l, w
         assert len(list_A) == len(list_b) == w.shape[0] == p.shape[0], \
             "Error: Numbers of A, b, w, and p are %d, %d, %d, %d which need to be identical." %( len(list_A), len(list_b), w.shape[0], p.shape[0])
        
@@ -44,9 +43,9 @@ class GeneralNorm(object):
     
     def solve(self, optimizer = "lsqr", tol = 1.0e-6, eps = 1.0e-8, max_itr = 1000):
         
+        # Initialization
         x_old = np.zeros(self.A.shape[1])
         x = np.zeros(self.A.shape[1])
-        
         W = sp.identity(self.A.shape[0])
         diff = 1 # must be larger than tol
         itr = 0
@@ -72,11 +71,12 @@ class GeneralNorm(object):
                 # See here for exploiting x_old in LSQR.
                 # https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.sparse.linalg.lsqr.html
                 r = Wb - WA * x_old
-                x = spal.lsqr(WA, r)[0] +x_old   # Solution is the first returned value from lsqr.
+                x = spal.lsqr(WA, r)[0] + x_old   # Solution is the first returned value from lsqr.
                     
             if optimizer == "cg":
-                x = spal.cg(WA, Wb, x0 = x_old)
-            
+                # This uses Jacobi preconditioner that multiplies WA.T 
+                x = spal.cg(WA.T* WA, WA.T*Wb, x0 = x_old)[0]
+                
             resVec = self.A * x - self.b
             
             # Update weight matrix
