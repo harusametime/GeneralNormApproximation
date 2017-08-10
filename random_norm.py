@@ -18,9 +18,14 @@ if __name__ == '__main__':
     # Number of columns in A, which is identical with the size of solution vector x
     n_col = 400
 
-    # Sparse matrices A_1, A_2,... and vectors b_1, b_2 ... are randomly generated.
+    # Sparse matrices A_1, A_2,...  are randomly generated.
     list_A = [sp.csr_matrix(np.random.rand(n_row[i],n_col)) for i in range(n_row.shape[0])]
-    list_b = [np.random.rand(n_row[i]) for i in range(n_row.shape[0])]
+    
+    # Ground truth x_gt is randomly determined.
+    x_gt = np.random.rand(n_col)
+    
+    # Vector b is determined by A*x_gt
+    list_b = [list_A[i] * x_gt  for i in range(n_row.shape[0])]
     
     # Weights for norms
     w = np.array([1,1])
@@ -32,3 +37,6 @@ if __name__ == '__main__':
     m = GeneralNorm(list_A, list_b, w, l)
     
     x = m.solve()
+    
+    # Evaluate error between x and x_gt by L2-norm
+    print "Error (L2-norm):", np.linalg.norm(x-x_gt,ord =2)
