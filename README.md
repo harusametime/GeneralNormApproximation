@@ -22,7 +22,7 @@ m = GeneralNorm(list_A, list_b, w, p)
 x = m.solve()
 ```
 
-`list_A` is a list of numpy ndarray *A*, `list_b` is a list of numpy ndarray *b*, `w` is a numpy array of weights on norms, and `p` is a numpy array of p values in l_p norms. We can get *x* as solution of the minimization problem.
+`list_A` is a list of scipy sparse matrices *A*, `list_b` is a list of numpy ndarray *b*, `w` is a numpy array of weights on norms, and `p` is a numpy array of p values in l_p norms. We can get *x* as solution of the minimization problem.
 
 ## Example
 
