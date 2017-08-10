@@ -7,4 +7,11 @@ This is a Python implemention of "Fast General Norm Approximation via Iterativel
 Reweighted Least Squares" presented in The 4th ACCV workshop on e-Heritage 2016.
 
 
-## Usage
+## Installation
+
+Put *general_norm.py* in your directory. This program requires 
+- Python 2.7
+- Numpy
+- Scipy
+
+
