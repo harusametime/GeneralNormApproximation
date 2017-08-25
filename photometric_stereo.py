@@ -30,7 +30,7 @@ def quantize(xyz):
     xyz[:, 0] =  np.array((xyz[:,0] - min_x )/pixel_x, dtype=int)
     xyz[:, 1] =  np.array((xyz[:,1] - min_y )/pixel_y, dtype=int)
     
-    print xyz
+    return xyz
 
 if __name__ == '__main__':
     
