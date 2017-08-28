@@ -7,9 +7,7 @@ Created on 2017/08/25
 import numpy as np
 import scipy.sparse as sp
 from general_norm import GeneralNorm
-
-
-
+import sequences 
 
 def quantize(xyz):
     
@@ -30,8 +28,33 @@ def quantize(xyz):
     xyz[:, 0] =  np.array((xyz[:,0] - min_x )/pixel_x, dtype=int)
     xyz[:, 1] =  np.array((xyz[:,1] - min_y )/pixel_y, dtype=int)
     
-    return xyz
+    # If multiple values given in the same position, the average values are employed.   
+    #      xy: position in pixels, index: index of position that has multiple values,
+    #      count: the number of the multiple values at each position
+    xy, index, count = np.unique(xyz[:,0:2], axis = 0,return_inverse=True,return_counts=True)
+    quantized_xyz = np.column_stack(( xy, 
+                                      np.bincount(index,xyz[:,2])/count,
+                                      np.bincount(index,xyz[:,3])/count, 
+                                      np.bincount(index,xyz[:,4])/count,
+                                      np.bincount(index,xyz[:,5])/count ))
+            
+    return quantized_xyz
 
+def generateLight(n_lights):
+    
+    gen = sequences.generate_hammersley(n_dims=3, n_points=n_lights)
+    points = []
+    for g in gen:
+        points.append(g)
+        
+    # This returns points [0,1]^3
+    L =  np.array(points)
+    
+    # The range [0,1] is scaled to [-1, 1]
+    L = L * 2 - 1
+    
+    return L
+   
 if __name__ == '__main__':
     
     n_lights = 40;
@@ -40,9 +63,15 @@ if __name__ == '__main__':
     fname = "./data/bunny.xyz"
     xyz = np.loadtxt(fname)
     
-    # N is a matrix of nx, ny, nz over all pixels
-    N = quantize(xyz)
+    # q_xyx is a matrix of x, y, z, nx, ny, nz over all pixels
+    q_xyz = quantize(xyz)
+    
+    # N as a matrix of Nx, Ny, Nz is extracted
+    N = np.matrix(q_xyz[:, 3:6])
     
     # The light direction (uniformly distributed) is generated
-    L = generateLight(n_lights)
+    L = np.matrix(generateLight(n_lights))
+    
+    # Measurement
+    M =  N * L.T
     
