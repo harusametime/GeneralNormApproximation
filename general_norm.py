@@ -34,7 +34,7 @@ class GeneralNorm(object):
         ## Check the size of A, b, l, w
         assert len(list_A) == len(list_b) == w.shape[0] == p.shape[0], \
             "Error: Numbers of A, b, w, and p are %d, %d, %d, %d which need to be identical." %( len(list_A), len(list_b), w.shape[0], p.shape[0])
-       
+        
         self.A = sp.vstack(list_A)
         self.b = np.hstack(list_b)
         self.w = w
@@ -45,7 +45,7 @@ class GeneralNorm(object):
         
         # Initialization
         x_old = np.zeros(self.A.shape[1])
-        x = np.zeros(self.A.shape[1])
+        x =  np.zeros(self.A.shape[1])
         W = sp.identity(self.A.shape[0])
         diff = 1 # must be larger than tol
         itr = 0
