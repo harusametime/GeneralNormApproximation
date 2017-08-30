@@ -62,6 +62,8 @@ def calculateAngle(v1,v2):
 
 if __name__ == '__main__':
     
+    
+    
     # Formulation of a photometric-stereo problem(L1, L2)
     formulation ="L2"
     
@@ -124,6 +126,6 @@ if __name__ == '__main__':
     for i in range(M.shape[0]):
         error += calculateAngle(estimate_N[i], N[i])
     
-    print "angular error (deg.): ",
+    print "angular error (rad.): ",
     print error/M.shape[0]
     
