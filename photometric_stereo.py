@@ -7,7 +7,11 @@ Created on 2017/08/25
 import numpy as np
 import scipy.sparse as sp
 from general_norm import GeneralNorm
-import sequences 
+import sequences
+import cv2
+import os
+import sys
+import glob
 
 def quantize(xyz):
     
@@ -60,9 +64,9 @@ def calculateAngle(v1,v2):
     v2 = v2/ np.linalg.norm(v2)
     return np.arccos(np.clip(np.dot(v1,v2),-1.0, 1.0))
 
-def readfile(source):
+def readfile(source_type, path, n_lights):
     # xyz has the position x, y, z with normals nx, ny, nz in this order
-    if source == "poc":
+    if source_type == "poc":
         fname = "./data/bunny.xyz"
         xyz = np.loadtxt(fname)
         
@@ -75,35 +79,54 @@ def readfile(source):
         # The light direction (uniformly distributed) is generated
         L = np.matrix(generateLight(n_lights))
         
-    elif source == "image":
+        # Measurement
+        M =  np.asarray(N * L.T)
+        
+    elif source_type == "image":
         
         dirname = "./data/caesar/"
+        L = np.loadtxt(dirname + "lighting.txt").T
         
-    return N, L
+        '''
+        ground.txt is ground truth of normal map that was extracted 
+        from mat file (matlab). If the image size is m * n, the file has
+        m * 3n matrix, which horizontally aligns m * n matrices of nx, ny and nz. 
+        '''
+        N = np.loadtxt(dirname + "ground.txt")        
+        pixels = N.shape[0], N.shape[1]/3
+        
+        N = np.vstack([N[:, pixels[1]*i : pixels[1]*(i+1)].reshape((-1,)) for i in range(3)]).T
+        
+        imgfiles = glob.glob(dirname + "*.*.png")
+        # Read img file as a gray-scale image
+        M = np.vstack([cv2.imread(imgfiles[i], flags =0).reshape((-1,)) for i in range(len(imgfiles))]).T
+        
+        # need to apply mask
+        
+    
+    return N, L, M
 
 if __name__ == '__main__':
     
     #Data source is poc (point cloud given as xyz) or image (given as PNG)
     source_type = "image"
     
+    # The number of light direction
+    n_lights = 40;
+    
     # File path for xyz or directory path for image
     path = "./data/bunny.xyz"
     
     # Read normal map and light direction from file
-    N, L = readfile(source_type, path)
+    N, L, M = readfile(source_type, path, n_lights)
     
     # Formulation of a photometric-stereo problem(L1, L2)
     formulation ="L2"
     
-    # The number of light direction
-    n_lights = 40;
     
     # Noise (not Gaussian) makes the measurement (noise) times larger (no noise if zero)
     noise = 5
     noise_ratio = 0.1
-    
-    # Measurement
-    M =  np.asarray(N * L.T)
     
     # Add noise on N
     noise_index = np.random.choice(np.arange(M.shape[0]), int(M.shape[0] * noise_ratio))
