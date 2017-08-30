@@ -101,8 +101,14 @@ def readfile(source_type, path, n_lights):
         # Read img file as a gray-scale image
         M = np.vstack([cv2.imread(imgfiles[i], flags =0).reshape((-1,)) for i in range(len(imgfiles))]).T
         
-        # need to apply mask
-        
+        # read mask file
+        mask= cv2.imread(dirname +"mask.png", flags = 0)
+        mask = mask.reshape((-1,))
+        mask_index = np.where(mask == 255)
+
+        # Extract only pixels that are defined in the mask (color is 255 in mask.png)
+        N = N[mask_index, :]
+        M = M[mask_index, :]
     
     return N, L, M
 
