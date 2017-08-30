@@ -60,9 +60,37 @@ def calculateAngle(v1,v2):
     v2 = v2/ np.linalg.norm(v2)
     return np.arccos(np.clip(np.dot(v1,v2),-1.0, 1.0))
 
+def readfile(source):
+    # xyz has the position x, y, z with normals nx, ny, nz in this order
+    if source == "poc":
+        fname = "./data/bunny.xyz"
+        xyz = np.loadtxt(fname)
+        
+        # q_xyx is a matrix of x, y, z, nx, ny, nz over all pixels
+        q_xyz = quantize(xyz)
+        
+        # N as a matrix of Nx, Ny, Nz is extracted
+        N = np.matrix(q_xyz[:, 3:6])
+        
+        # The light direction (uniformly distributed) is generated
+        L = np.matrix(generateLight(n_lights))
+        
+    elif source == "image":
+        
+        dirname = "./data/caesar/"
+        
+    return N, L
+
 if __name__ == '__main__':
     
+    #Data source is poc (point cloud given as xyz) or image (given as PNG)
+    source_type = "image"
     
+    # File path for xyz or directory path for image
+    path = "./data/bunny.xyz"
+    
+    # Read normal map and light direction from file
+    N, L = readfile(source_type, path)
     
     # Formulation of a photometric-stereo problem(L1, L2)
     formulation ="L2"
@@ -73,19 +101,6 @@ if __name__ == '__main__':
     # Noise (not Gaussian) makes the measurement (noise) times larger (no noise if zero)
     noise = 5
     noise_ratio = 0.1
-    
-    # xyz has the position x, y, z with normals nx, ny, nz in this order
-    fname = "./data/bunny.xyz"
-    xyz = np.loadtxt(fname)
-    
-    # q_xyx is a matrix of x, y, z, nx, ny, nz over all pixels
-    q_xyz = quantize(xyz)
-    
-    # N as a matrix of Nx, Ny, Nz is extracted
-    N = np.matrix(q_xyz[:, 3:6])
-    
-    # The light direction (uniformly distributed) is generated
-    L = np.matrix(generateLight(n_lights))
     
     # Measurement
     M =  np.asarray(N * L.T)
