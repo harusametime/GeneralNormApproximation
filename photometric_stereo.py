@@ -107,9 +107,9 @@ def readfile(source_type, path, n_lights):
         mask_index = np.where(mask == 255)
 
         # Extract only pixels that are defined in the mask (color is 255 in mask.png)
-        N = N[mask_index, :]
-        M = M[mask_index, :]
-    
+        N = N[mask_index]
+        M = M[mask_index]
+
     return N, L, M
 
 if __name__ == '__main__':
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     N, L, M = readfile(source_type, path, n_lights)
     
     # Formulation of a photometric-stereo problem(L1, L2)
-    formulation ="L2"
+    formulation ="L1"
     
     
     # Noise (not Gaussian) makes the measurement (noise) times larger (no noise if zero)
@@ -141,6 +141,7 @@ if __name__ == '__main__':
     estimate_N = np.empty(N.shape)
     
     list_A = [sp.csr_matrix(L)]
+    
 
     '''
     Here the photometric stereo problem with formulation of L1, L2 is solved at each pixel i.
@@ -149,14 +150,13 @@ if __name__ == '__main__':
         w = np.array([1])
         l = np.array([2])
         for i in range(M.shape[0]):
-            list_b = [M[i].T]
+            list_b = [M[i].T]  
             p = GeneralNorm(list_A, list_b, w, l)
             estimate_N[i] = p.solve() 
             
     elif formulation =="L1":
         w = np.array([1])
         l = np.array([1])
-        m = GeneralNorm(list_A, list_b, w, l)
         for i in range(M.shape[0]):
             list_b = [M[i].T]
             p = GeneralNorm(list_A, list_b, w, l)
