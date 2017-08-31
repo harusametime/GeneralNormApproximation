@@ -32,5 +32,5 @@ Design matrices *A* and solution *x* are randomly determined, and *b* is calcula
 
 ### *photometric_stero.py* 
 
-Normal map *N* of an object is estimated from measurement *M* and light direction *L* based on Lambert's law. This program can receive either point cloud with normals or measurement of an object. Running this program requires opencv for dealing with images.
+Normal map *N* of an object is estimated from measurement *M* and light direction *L* based on Lambert's law. This program can receive either point cloud with normals or measurement images of an object under different light directions. Running this program requires opencv for dealing with images.
 
