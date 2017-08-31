@@ -82,6 +82,18 @@ def readfile(source_type, path, n_lights):
         # Measurement
         M =  np.asarray(N * L.T)
         
+    
+        # Noise (not Gaussian) makes the measurement (noise) times larger (no noise if zero)
+        noise = 5
+        noise_ratio = 0.2
+        
+        # Add noise on N
+        n_noise = int(M.size * noise_ratio)
+        noise_index = np.array([np.random.choice(np.arange(M.shape[0]),n_noise)
+                        ,np.random.choice(np.arange(M.shape[1]), n_noise)])
+
+        M[noise_index[0], noise_index[1]] = noise * M[noise_index[0], noise_index[1]]
+        
     elif source_type == "image":
         
         dirname = path
@@ -128,16 +140,7 @@ if __name__ == '__main__':
     N, L, M = readfile(source_type, path, n_lights)
     
     # Formulation of a photometric-stereo problem(L1, L2)
-    formulation ="L1"
-    
-    
-    # Noise (not Gaussian) makes the measurement (noise) times larger (no noise if zero)
-    noise = 5
-    noise_ratio = 0.1
-    
-    # Add noise on N
-    noise_index = np.random.choice(np.arange(M.shape[0]), int(M.shape[0] * noise_ratio))
-    M[noise_index] *= noise
+    formulation ="L2"
     
     estimate_N = np.empty(N.shape)
     
