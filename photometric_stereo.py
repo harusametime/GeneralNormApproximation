@@ -67,8 +67,8 @@ def calculateAngle(v1,v2):
 def readfile(source_type, path, n_lights):
     # xyz has the position x, y, z with normals nx, ny, nz in this order
     if source_type == "poc":
-        fname = "./data/bunny.xyz"
-        xyz = np.loadtxt(fname)
+        
+        xyz = np.loadtxt(path)
         
         # q_xyx is a matrix of x, y, z, nx, ny, nz over all pixels
         q_xyz = quantize(xyz)
@@ -84,7 +84,7 @@ def readfile(source_type, path, n_lights):
         
     elif source_type == "image":
         
-        dirname = "./data/caesar/"
+        dirname = path
         L = np.loadtxt(dirname + "lighting.txt").T
         
         '''
@@ -121,7 +121,8 @@ if __name__ == '__main__':
     n_lights = 40;
     
     # File path for xyz or directory path for image
-    path = "./data/bunny.xyz"
+    #path = "./data/bunny.xyz"
+    path = "./data/caesar/"
     
     # Read normal map and light direction from file
     N, L, M = readfile(source_type, path, n_lights)
