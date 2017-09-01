@@ -6,7 +6,8 @@ Created on 2017/08/31
 
 import numpy as np
 import scipy.sparse as sp
-from scipy.linalg import toeplitz
+from scipy.sparse import spdiags
+from scipy.linalg import block_diag
 from general_norm import GeneralNorm
 import util
 import sys
@@ -38,13 +39,10 @@ def readfile(source_type, path):
     N[noise_index[0], noise_index[1]] = noise * N[noise_index[0], noise_index[1]]
      
     g = np.concatenate((np.array(N[:,0]/N[:,2]).reshape((-1,)), np.array(N[:,1]/N[:,2]).reshape((-1,))))
+
+    xyz = q_xyz[:,0:3]
     
-    z = q_xyz[:,2]
-    
-    return z, g
-
-
-
+    return xyz, g
         
 if __name__ == '__main__':
     
@@ -54,7 +52,20 @@ if __name__ == '__main__':
     # File path for xyz 
     path = "./data/bunny.xyz"
     
-    z, g = readfile(source_type, path)
+    xyz, g = readfile(source_type, path)
+    pixels_x = int(np.max(xyz[:,0])) + 1
+    pixels_y = int(np.max(xyz[:,1])) + 1
+    n_pixels = pixels_x * pixels_y
     
-    print toeplitz([1, 0, 0, 0], [1, 2, 3, 0, 0, 0])
+    under_diag = np.zeros(n_pixels)
+    for y in range(pixels_y):
+        under_diag[pixels_x * y - 2] = 1
+    bidiag_val = np.vstack((under_diag, np.ones(n_pixels), -np.ones(n_pixels)))
+    D_x = spdiags(bidiag_val, np.array([-1,0,1]), n_pixels, n_pixels)
+    
+    under_diag = np.zeros(n_pixels)
+    for x in range(pixels_x):
+        under_diag[(pixels_y-2) * pixels_x + x] = 1
+    bidiag_val = np.vstack((under_diag, -np.ones(n_pixels), np.ones(n_pixels)))
+    D_y = spdiags(bidiag_val, np.array([-pixels_x,0,pixels_x]), n_pixels, n_pixels)
     
