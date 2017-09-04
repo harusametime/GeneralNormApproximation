@@ -6,6 +6,8 @@ Fast General Norm Approximation
 This is a Python implemention of "Fast General Norm Approximation via Iteratively
 Reweighted Least Squares" presented in The 4th ACCV workshop on e-Heritage 2016.
 
+<img src ="https://latex.codecogs.com/gif.latex?\min_x&space;\sum_{k=1}^{K}&space;\lambda_k&space;\left&space;\|&space;A_k&space;x&space;-b_k&space;\right&space;\|_{p_k}&space;^{p_k}">
+
 
 ## Installation
 
