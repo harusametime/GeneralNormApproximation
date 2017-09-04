@@ -12,6 +12,7 @@ from scipy.sparse import vstack
 from general_norm import GeneralNorm
 import util
 import sys
+from numpy import int
 
 def readfile(source_type, path):
     
@@ -53,6 +54,9 @@ if __name__ == '__main__':
 
     # File path for xyz 
     path = "./data/bunny.xyz"
+        
+    # Formulation of a surface-from-normal problem (L1, L2)
+    formulation ="L2"
     
     xyz = readfile(source_type, path)
     pixels_x = int(np.max(xyz[:,0])) + 1
@@ -80,11 +84,46 @@ if __name__ == '__main__':
     # D is a design matrix in this problem ||Dz -g||_p^p -> min.
     D = sp.vstack((D_x, D_y))
     
-    # g is a vector of gradients calculated from normal
-    g = np.zeros(n_pixels * 2)
+    # g_x,  is a vector of gradients calculated from normal
+    g_x = np.zeros(n_pixels)
+    g_y = np.zeros(n_pixels)
     
     # N as a matrix of Nx, Ny, Nz is extracted. Noise is added on them.
-    N = np.matrix(xyz[:, 3:6])
+    N = np.array(xyz[:, 3:6])
     N_noise = addnoise(N)
+    
+    index_x = np.array(xyz[:,0], dtype=int)
+    index_y = np.array(xyz[:,1], dtype=int)
+    index = index_x + index_y * pixels_x
+
+    g_x[index] = N[:,0]/N[:,2]
+    g_y[index] = N[:,1]/N[:,2]
+    
+    # Gradient vector is a vector where g_x, g_y are aligned vertically.
+    g = np.concatenate((g_x, g_y))
+    
+    # True depth values "true_z" from xyz
+    true_z = np.zeros(n_pixels)
+    z = np.zeros(n_pixels)
+    true_z[index] = xyz[:,2]
+    
+
+    if formulation == "L2":
+        list_A = [D]
+        list_b = [g]
+        w = np.array([1])
+        l = np.array([2])
+        p = GeneralNorm(list_A, list_b, w, l)
+        z = p.solve() 
+            
+    elif formulation =="L1":
+        list_A = [D]
+        list_b = [g]
+        w = np.array([1])
+        l = np.array([1])
+        p = GeneralNorm(list_A, list_b, w, l)
+        z = p.solve() 
+            
+    
     
     
