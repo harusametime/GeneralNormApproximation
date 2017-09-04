@@ -105,8 +105,8 @@ if __name__ == '__main__':
     # True depth values "true_z" from xyz
     true_z = np.zeros(n_pixels)
     z = np.zeros(n_pixels)
-    true_z[index] = xyz[:,2]
     
+    true_z[index] = xyz[:,2]
 
     if formulation == "L2":
         list_A = [D]
@@ -122,7 +122,18 @@ if __name__ == '__main__':
         w = np.array([1])
         l = np.array([1])
         p = GeneralNorm(list_A, list_b, w, l)
-        z = p.solve() 
+        z = p.solve()
+        
+    # Depth estimate z has constant ambiguity C.
+    # C is adjusted by average of gaps between z - z_true, which
+    # means that the surface estimate is translated to the true one.
+    gap = true_z - z
+    C = np.sum(true_z[index] - z[index])/ index.shape[0]
+    z= z + C
+    
+    print "L2 depth error :",
+    print np.linalg.norm(z-true_z, ord =2)
+    
             
     
     
