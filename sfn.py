@@ -34,8 +34,8 @@ def addnoise(N):
     '''
     
     # Noise (not Gaussian) makes the measurement (noise) times larger (no noise if zero)
-    noise = 5
-    noise_ratio = 0.2
+    noise = 10
+    noise_ratio = 0.1
      
     # Add noise on N
     n_noise = int(N.size * noise_ratio)
@@ -99,8 +99,8 @@ if __name__ == '__main__':
     index_y = np.array(xyz[:,1], dtype=int)
     index = index_x + index_y * pixels_x
 
-    g_x[index] = N[:,0]/N[:,2]
-    g_y[index] = N[:,1]/N[:,2]
+    g_x[index] = N_noise[:,0]/N_noise[:,2]
+    g_y[index] = N_noise[:,1]/N_noise[:,2]
     
     # Gradient vector is a vector where g_x, g_y are aligned vertically.
     g = np.concatenate((g_x, g_y))
