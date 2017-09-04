@@ -8,6 +8,7 @@ import numpy as np
 import scipy.sparse as sp
 from scipy.sparse import spdiags
 from scipy.linalg import block_diag
+from scipy.sparse import vstack
 from general_norm import GeneralNorm
 import util
 import sys
@@ -22,10 +23,14 @@ def readfile(source_type, path):
     
     # q_xyx is a matrix of x, y, z, nx, ny, nz over all pixels
     q_xyz = util.quantize(xyz)
-    
-    # N as a matrix of Nx, Ny, Nz is extracted
-    N = np.matrix(q_xyz[:, 3:6])
-    
+      
+    return q_xyz
+
+def addnoise(N):
+    '''
+    This adds noise to normal N. 
+    The size and frequency of the noise are defined by "noise" and "noise ratio"
+    '''
     
     # Noise (not Gaussian) makes the measurement (noise) times larger (no noise if zero)
     noise = 5
@@ -37,12 +42,9 @@ def readfile(source_type, path):
                     ,np.random.choice(np.arange(N.shape[1]), n_noise)])
  
     N[noise_index[0], noise_index[1]] = noise * N[noise_index[0], noise_index[1]]
-     
-    g = np.concatenate((np.array(N[:,0]/N[:,2]).reshape((-1,)), np.array(N[:,1]/N[:,2]).reshape((-1,))))
-
-    xyz = q_xyz[:,0:3]
     
-    return xyz, g
+    return N
+    
         
 if __name__ == '__main__':
     
@@ -52,20 +54,37 @@ if __name__ == '__main__':
     # File path for xyz 
     path = "./data/bunny.xyz"
     
-    xyz, g = readfile(source_type, path)
+    xyz = readfile(source_type, path)
     pixels_x = int(np.max(xyz[:,0])) + 1
     pixels_y = int(np.max(xyz[:,1])) + 1
     n_pixels = pixels_x * pixels_y
     
+    # D_x is a differentiation matrix nx / nz
+    # This is a tri-diagonal matrix of under_diag, 1, -1
+    # under_diag is a vector that has 1 at pixels_x * y - 2 in matrix B.
     under_diag = np.zeros(n_pixels)
     for y in range(pixels_y):
         under_diag[pixels_x * y - 2] = 1
     bidiag_val = np.vstack((under_diag, np.ones(n_pixels), -np.ones(n_pixels)))
     D_x = spdiags(bidiag_val, np.array([-1,0,1]), n_pixels, n_pixels)
-    
+
+    # D_y is a differentiation matrix nx / nz
+    # This is a tri-diagonal matrix of under_diag, 1, -1
+    # under_diag has a vector of diagonal elements in identity matrix at last x_pixels.
     under_diag = np.zeros(n_pixels)
     for x in range(pixels_x):
         under_diag[(pixels_y-2) * pixels_x + x] = 1
     bidiag_val = np.vstack((under_diag, -np.ones(n_pixels), np.ones(n_pixels)))
     D_y = spdiags(bidiag_val, np.array([-pixels_x,0,pixels_x]), n_pixels, n_pixels)
+    
+    # D is a design matrix in this problem ||Dz -g||_p^p -> min.
+    D = sp.vstack((D_x, D_y))
+    
+    # g is a vector of gradients calculated from normal
+    g = np.zeros(n_pixels * 2)
+    
+    # N as a matrix of Nx, Ny, Nz is extracted. Noise is added on them.
+    N = np.matrix(xyz[:, 3:6])
+    N_noise = addnoise(N)
+    
     
