@@ -54,9 +54,12 @@ if __name__ == '__main__':
 
     # File path for xyz 
     path = "./data/bunny.xyz"
+    
+    # pixel_size for quantization
+    pixel_size = 0.0005
         
     # Formulation of a surface-from-normal problem (L1, L2)
-    formulation ="L2"
+    formulation ="L1"
     
     xyz = readfile(source_type, path)
     pixels_x = int(np.max(xyz[:,0])) + 1
@@ -127,12 +130,13 @@ if __name__ == '__main__':
     # Depth estimate z has constant ambiguity C.
     # C is adjusted by average of gaps between z - z_true, which
     # means that the surface estimate is translated to the true one.
+    z = z * pixel_size
     gap = true_z - z
     C = np.sum(true_z[index] - z[index])/ index.shape[0]
-    z= z + C
+    z= z - C
     
     print "L2 depth error :",
-    print np.linalg.norm(z-true_z, ord =2)
+    print np.linalg.norm(z[index]-true_z[index], ord =2)
     
             
     
