@@ -13,6 +13,7 @@ Put *general_norm.py* in your directory. This program requires
 - Python 2.7
 - Numpy
 - Scipy
+- opencv (for reading images in photometric_stereo.py)
 
 ## Usage
 
@@ -32,5 +33,7 @@ Design matrices *A* and solution *x* are randomly determined, and *b* is calcula
 
 ### *photometric_stero.py* 
 
-Normal map *N* of an object is estimated from measurement *M* and light direction *L* based on Lambert's law. This program can receive either point cloud with normals or measurement images of an object under different light directions. Running this program requires opencv for dealing with images.
+Normal map *N* of an object is estimated from measurement *M* and light direction *L* based on Lambert's law. This program can receive either point cloud with normals or measurement images of an object under different light directions. 
 
+### *sfn.py*
+Surface represented by a set of depth is estimated from normal map *N* based on the fact that differentiation of the surface leads to gradient calculated from normal. 
