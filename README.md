@@ -3,11 +3,13 @@ Fast General Norm Approximation
 
 ## Description
 
-This is a Python implementation of "Fast General Norm Approximation via Iteratively Reweighted Least Squares" presented in The 4th ACCV workshop on e-Heritage 2016, and aims at solving the following minimization problem.
+This is a Python implementation of a solver for the following minimization problem:
 
 <p align="center">
 <img src ="https://latex.codecogs.com/gif.latex?\min_x&space;\sum_{k=1}^{K}&space;\lambda_k&space;\left&space;\|&space;A_k&space;x&space;-b_k&space;\right&space;\|_{p_k}&space;^{p_k}">
 </p>
+
+based on my work on "Fast General Norm Approximation via Iteratively Reweighted Least Squares" presented in The 4th ACCV workshop on e-Heritage 2016.
 
 ## Installation
 
