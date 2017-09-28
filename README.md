@@ -14,7 +14,7 @@ based on my work on "Fast General Norm Approximation via Iteratively Reweighted 
 ## Installation
 
 Put *general_norm.py* in your directory. This program requires 
-- Python 2.7
+- Python 3.5
 - Numpy
 - Scipy
 - opencv (for reading images in photometric_stereo.py)
