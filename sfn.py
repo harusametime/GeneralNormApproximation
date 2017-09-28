@@ -135,8 +135,7 @@ if __name__ == '__main__':
     C = np.sum(true_z[index] - z[index])/ index.shape[0]
     z= z - C
     
-    print "L2 depth error :",
-    print np.linalg.norm(z[index]-true_z[index], ord =2)
+    print ("L2 depth error :",np.linalg.norm(z[index]-true_z[index], ord =2))
     
             
     

@@ -39,4 +39,4 @@ if __name__ == '__main__':
     x = m.solve()
     
     # Evaluate error between x and x_gt by L2-norm
-    print "Error (L2-norm):", np.linalg.norm(x-x_gt,ord =2)
+    print("Error (L2-norm):", np.linalg.norm(x-x_gt,ord =2))

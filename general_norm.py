@@ -10,6 +10,7 @@ import scipy.sparse.linalg as spal
 import scipy.linalg as al
 from itertools import product
 import math
+import time
 
 class GeneralNorm(object):
     '''
@@ -41,7 +42,26 @@ class GeneralNorm(object):
         self.p = p
         self.n_row = np.array([list_A[i].shape[0] for i in range(len(list_A))]) 
     
-    def solve(self, optimizer = "lsqr", tol = 1.0e-6, eps = 1.0e-8, max_itr = 1000):
+    def solve(self, optimizer = "lsqr", tol = 1.0e-6, eps = 1.0e-8, max_itr = 1000, opt_param = None):
+    
+        '''
+        Parameters of optimizers (in dictionary style):
+          LSQR uses atol, btol, conlim, and iter_lim.
+          CG uses atol for 'tol' and iter_lim for maxiter.
+        The default values are set to those used in scipy.linalg.lsqr.
+        '''
+        _opt_param = {'atol' : 1e-08, 'btol':1e-08, 'conlim':100000000.0, 'iter_lim':None}
+        
+        if opt_param is not None:   
+            for key, value  in _opt_param.items():
+                if key not in opt_param:
+                    opt_param[key] = _opt_param[key] 
+                else:
+                    if optimizer == 'cg' and ( key == 'btol' or 'conlim'):
+                        print("warning: btol or conlim are set, but never used in conjugate gradient.")
+        else:
+            opt_param = _opt_param
+            
         
         # Initialization
         x_old = np.zeros(self.A.shape[1])
@@ -62,6 +82,9 @@ class GeneralNorm(object):
         # This prepares a vectorized function, update_allW, that can update all elements in W.  
         update_allW = np.vectorize(self._updateW, otypes=[np.float])
         
+        print("Iteration; Diff. of x; Elapsed time [sec.]")
+        print("----------------------------------------------")
+        
         while diff > tol and max_itr > itr: 
             
             WA = W * self.A
@@ -71,11 +94,30 @@ class GeneralNorm(object):
                 # See here for exploiting x_old in LSQR.
                 # https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.sparse.linalg.lsqr.html
                 r = Wb - WA * x_old
-                x = spal.lsqr(WA, r)[0] + x_old   # Solution is the first returned value from lsqr.
+#                 M = spal.spilu(WA, drop_tol=opt_param['atol'], fill_factor=1)
+#                 Mz = lambda r: M.solve(r)
+#                 Minv = spal.LinearOperator(WA.shape, Mz)
+                solution = spal.lsqr(WA, r, 
+                              atol = opt_param['atol'], btol = opt_param['btol'], 
+                              conlim = opt_param['conlim'], iter_lim = opt_param['iter_lim'])   
+                x = solution[0] +x_old  # Solution is the first returned value from lsqr.
+                new_atol = solution[7]/(solution[3]*solution[5])
+#                 print new_atol
+#                 opt_param['atol'] = new_atol
+#                 opt_param['btol'] = new_atol
+#                 opt_param['conlim'] = 1/ new_atol
+           
+            elif optimizer == "lsmr":
+                # See here for exploiting x_old in LSQR.
+                # https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.sparse.linalg.lsqr.html
+                r = Wb - WA * x_old
+                x = spal.lsmr(WA, r, 
+                              atol = opt_param['atol'], btol = opt_param['btol'], 
+                              conlim = opt_param['conlim'], maxiter = opt_param['iter_lim'] )[0] + x_old   # Solution is the first returned value from lsmr
                     
-            if optimizer == "cg":
+            elif optimizer == "cg":
                 # This uses Jacobi preconditioner that multiplies WA.T 
-                x = spal.cg(WA.T* WA, WA.T*Wb, x0 = x_old)[0]
+                x = spal.cg(WA.T* WA, WA.T*Wb, x0 = x_old, tol = opt_param['atol'], maxiter=opt_param['iter_lim'])[0]
                 
             resVec = self.A * x - self.b
             
@@ -85,6 +127,8 @@ class GeneralNorm(object):
             # Update values for stopping criteria  
             diff = al.norm(x-x_old, ord = 2)
             itr += 1
+            
+            print(itr, diff, time.clock())
             
             # Update the previous solution
             x_old = x
