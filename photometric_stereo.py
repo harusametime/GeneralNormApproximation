@@ -7,6 +7,7 @@ Created on 2017/08/25
 import numpy as np
 import scipy.sparse as sp
 from scipy.sparse import block_diag, kron, identity
+import matplotlib.pyplot as plt
 from general_norm import GeneralNorm
 import cv2
 import glob
@@ -56,7 +57,7 @@ def readfile(source_type, path, n_lights):
         m * 3n matrix, which horizontally aligns m * n matrices of nx, ny and nz. 
         '''
         N = np.loadtxt(dirname + "ground.txt")        
-        pixels = N.shape[0], N.shape[1]/3
+        pixels = int(N.shape[0]), int(N.shape[1]/3)
         
         N = np.vstack([N[:, int(pixels[1]*i): int(pixels[1]*(i+1))].reshape((-1,)) for i in range(3)]).T
 
@@ -67,15 +68,14 @@ def readfile(source_type, path, n_lights):
         # read mask file
         mask= cv2.imread(dirname +"mask.png", flags = 0)
         
-        mask = mask.reshape((-1,))
-        mask_index = np.where(mask == 255)
+        mask_flat = mask.reshape((-1,))
+        mask_index = np.where(mask_flat == 255)
         
         # Extract only pixels that are defined in the mask (color is 255 in mask.png)
         N = N[mask_index]
         M = M[mask_index]
 
-
-    return N, L, M
+    return N, L, M, mask
 
 if __name__ == '__main__':
     
@@ -91,17 +91,17 @@ if __name__ == '__main__':
     path = "./data/caesar/"
     
     # Read normal map and light direction from file
-    N, L, M = readfile(source_type, path, n_lights)
+    N, L, M, mask = readfile(source_type, path, n_lights)
     
     # Formulation of a photometric-stereo problem(L1, L2)
-    formulation ="L1"
+    formulation ="L2"
     
     estimate_N = np.empty(N.shape)
     
     list_A = [sp.csr_matrix(L)]
     
     # Parameter for optimizer like lsqr, cg.
-    opt_param = {'atol' : 1e-06, 'btol':1e-06, 'conlim':1e6, 'iter_lim':1000}
+    opt_param = {'atol' : 1e-08, 'btol':1e-08, 'conlim':1e8, 'iter_lim':100000}
     
     
     '''
@@ -136,6 +136,21 @@ if __name__ == '__main__':
     N = np.asarray(N)
     for i in range(M.shape[0]):
         error += util.calculateAngle(estimate_N[i], N[i])
-    
     print("angular error (rad.): ",error/M.shape[0])
+    
+    '''
+    Output normal map (converted to RGB values) 
+    '''
+    RGB = np.zeros((mask.shape[0] * mask.shape[1], 3))    
+    RGB[np.where(mask == 255), :] = (N - np.amin(N, axis = 0)) * (255 / (np.amax(N, axis = 0) - np.amin(N, axis = 0)))
+    print(np.where(mask == 255))
+    print(RGB[0,:])
+    RGB = RGB.astype(int).reshape((mask.shape[0], mask.shape[1], 3), order ='F')
+    print(mask[0])
+    print(RGB[0,0,:])
+    cv2.imshow("test", RGB)
+           
+    
+
+    
     
