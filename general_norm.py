@@ -97,10 +97,15 @@ class GeneralNorm(object):
 #                 M = spal.spilu(WA, drop_tol=opt_param['atol'], fill_factor=1)
 #                 Mz = lambda r: M.solve(r)
 #                 Minv = spal.LinearOperator(WA.shape, Mz)
-                solution = spal.lsqr(WA, r, 
+                
+                s_diag = spal.norm(WA, axis = 0)                
+                #s_diag = np.power(s_diag,-1)
+                S = sp.diags(s_diag)
+
+                solution = spal.lsqr(WA * S, r, 
                               atol = opt_param['atol'], btol = opt_param['btol'], 
                               conlim = opt_param['conlim'], iter_lim = opt_param['iter_lim'])   
-                x = solution[0] +x_old  # Solution is the first returned value from lsqr.
+                x = S * solution[0] +x_old  # Solution is the first returned value from lsqr.
                 new_atol = solution[7]/(solution[3]*solution[5])
 #                 print new_atol
 #                 opt_param['atol'] = new_atol
